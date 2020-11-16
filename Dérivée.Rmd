@@ -1,0 +1,104 @@
+---
+title: "Dérivée"
+author: "Corentin BRETONNIERE"
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# 1/ Dériver par une fonction de dérivation
+
+## A. Obtenir l'expression d'une dérivée (méthode facile)
+La fonction R "D" permet de dériver des _expressions_ définies au préalable
+```{r}
+f=expression(x^2+3*x)
+D(f,'x')
+```
+
+C'est également possible de dériver avec avec deux inconnus 
+```{r}
+a<-expression(x^2+3*x+5*y^6)
+D(a,'x')
+D(a,'y')
+```
+
+## A.bis. Obtenir l'expression d'une dérivée (méthode compliquée)
+
+D'abord, il faut assigner à notre variable une fonction (maDerive <- function(x)), cette fonction est l'expression de la dérivée (monExpression <- deriv(~2*x^4 + sqrt(x), "x")).
+La "~" est essentielle et elle doit figurer avant l'équation à dériver.
+Ensuite, on assigne à une autre variale (r) la fonction R "eval", elle sert à évaluer une expression R. A cette variable r dans laquelle est stocké la valeur de la dérivée on lui ajoute un attribut avec la fonction R "attr", la dimension est 'gradient'.
+L'ajout de "; monExpression" à la fin permet d'afficher l'expression de la dérivée en "x".
+```{r}
+monExpression <- deriv(~2*x^4 + sqrt(x), "x")
+maDerive <- function(x){
+    monExpression 
+    r <- eval(monExpression);
+    r <- attr(r, 'gradient');
+} ; monExpression
+```
+
+## B. Obtenir la valeur en 1 point
+
+Pour afficher la valeur en x=2 par exemple il faut utiliser cette notation.
+
+```{r}
+valeurDunPoint <- maDerive(2); valeurDunPoint
+```
+
+## C. Dériver un vecteur ou une matrice 
+
+On peut également appliquer cette dérivé à toutes les valeurs d'un vecteur ...
+Pour ce faire il faut lui appliquer la fonction "Vectorize". 
+
+```{r}
+maDerive <- Vectorize(maDerive)
+
+v <- c(1,2,3,4,5); maDerive(v)
+```
+
+... ou d'une matrice !
+
+```{r}
+m <- matrix(data = 1:12, nrow = 3, ncol = 4); m; maDerive(m)
+```
+
+# 2/ Dériver par le calcul direct numérique de la dérivée
+
+## A. Avec le taux d'accroissement dx  
+```{r}
+derivee  <- function (f, dx){
+            d <- function(x)(f(x + dx)-f(x))/dx
+            }
+```
+
+Avec cette méthode, on exprime directement "l'essence même" de la dérivée avec son expression originel. Il faudra cependant préciser dx (valeur d'écart).
+```{r}
+f <- function(x) x^2
+d_ <- derivee(f,0.00000000001) #Valeur d'écart = 1 dix milliardième
+d_(2)
+```
+Si on augmente la valeur d'écart, ça modifie logiquement la pente de la dérivée
+```{r}
+d_2 <- derivee(f,0.001)
+d_2(2)
+```
+## B. Application à des vecteurs et des matrices
+
+Avec un vecteur :
+```{r}
+d_vm <- Vectorize(d_)
+v_ <- c(1,2,3,4); v_
+d_vm(v_)
+```
+Avec une matrice diagonale
+```{r}
+m_ <- diag(1:3,3); m_
+d_vm(m_)
+```
+
+
+
